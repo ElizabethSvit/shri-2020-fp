@@ -102,17 +102,17 @@ export const validateFieldN5 = (params) => {
 export const validateFieldN6 = (params) => {
     return R.anyPass([
         R.allPass([getFiguresSameColor([STAR, TRIANGLE], 'green'),
-            getFigureEqualsColor('red', CIRCLE), getFigureNotEqualsColor('green', SQUARE)]),
+            getFigureEqualsColor('red', CIRCLE)]),
         R.allPass([getFiguresSameColor([STAR, TRIANGLE], 'green'),
-            getFigureEqualsColor('red', SQUARE), getFigureNotEqualsColor('green', CIRCLE)]),
+            getFigureEqualsColor('red', SQUARE)]),
         R.allPass([getFiguresSameColor([SQUARE, TRIANGLE], 'green'),
-            getFigureEqualsColor('red', CIRCLE), getFigureNotEqualsColor('green', STAR)]),
+            getFigureEqualsColor('red', CIRCLE)]),
         R.allPass([getFiguresSameColor([SQUARE, TRIANGLE], 'green'),
-            getFigureEqualsColor('red', STAR), getFigureNotEqualsColor('green', CIRCLE)]),
+            getFigureEqualsColor('red', STAR)]),
         R.allPass([getFiguresSameColor([CIRCLE, TRIANGLE], 'green'),
-            getFigureEqualsColor('red', STAR), getFigureNotEqualsColor('green', SQUARE)]),
+            getFigureEqualsColor('red', STAR)]),
         R.allPass([getFiguresSameColor([CIRCLE, TRIANGLE], 'green'),
-            getFigureEqualsColor('red', SQUARE), getFigureNotEqualsColor('green', STAR)]),
+            getFigureEqualsColor('red', SQUARE)]),
     ])(params)
 };
 
