@@ -19,53 +19,72 @@ import * as R from "ramda";
 
 const api = new Api();
 
-/**
- * Я – пример, удали меня
- */
-const wait = time => new Promise(resolve => {
-    setTimeout(resolve, time);
-});
+const promisesPipeline = ({value, writeLog, handleSuccess}) => {
+    const writeLogAndReturn = (value) => { writeLog(value); return value; };
+
+    // convert to rounded number
+    const convertToRoundNumber = R.pipe(
+        () => Math.round(Number(value)),
+        writeLogAndReturn,
+    );
+
+    // convert to decimal base
+    const convertToDecimalBase = (value) => api.get('https://api.tech/numbers/base', {from: 2, to: 10, number: value});
+    const getValueFromResult = R.prop('result');
+
+    // some random math calculations
+    const getNumberLength = R.pipe(
+        (value) => value.toString().length,
+        writeLogAndReturn,
+    );
+
+    const powOfTwo = R.pipe(
+        (value) => Math.pow(value, 2),
+        writeLogAndReturn,
+    );
+
+    const moduloThree = R.pipe(
+        (value) => R.modulo(value, 3),
+        writeLogAndReturn,
+    );
+
+    // get random animal
+    const getRandomAnimal = (value) => api.get('https://animals.tech', {id: value});
+
+    // converge might be useful here
+    return R.pipe(
+        convertToRoundNumber,
+        convertToDecimalBase,
+        R.andThen(getValueFromResult),
+        R.andThen(writeLogAndReturn),
+        R.andThen(getNumberLength),
+        R.andThen(powOfTwo),
+        R.andThen(moduloThree),
+        R.andThen(getRandomAnimal),
+        R.andThen(getValueFromResult),
+        R.andThen(handleSuccess),
+    );
+};
 
 const processSequence = ({value, writeLog, handleSuccess, handleError}) => {
+    // input value check
     const decimal = /^[+-]?\d+(\.\d+)?$/;
     const biggerThanTwo = () => value.length > 2;
     const smallerThanTen = () => value.length < 10;
     const isPositiveNum = () => value.length > 0;
 
-    const valueCheck = R.ifElse(
-        R.allPass([smallerThanTen, biggerThanTwo, isPositiveNum]),
-        () => {
-            return writeLog(R.prop('value', {value: value}));
-        },
-        () => {
-            return handleError('ValidationError');
-        },
-    );
+    const valueCheck = R.allPass([smallerThanTen, biggerThanTwo, isPositiveNum]);
+    const numberCheck = () => R.test(decimal, value);
 
-    const numberCheck = R.ifElse(
-        () => R.test(decimal, value),
-        valueCheck,
+    const calculateTillTheEnd = R.ifElse(
+        R.and(numberCheck, valueCheck),
+        promisesPipeline({value, writeLog, handleSuccess}),
         () => {
-            return handleError('ValidationError');
+            handleError('ValidationError');
         },
     );
-    numberCheck();
 
-    api.get('https://api.tech/numbers/base', {from: 2, to: 10, number: '01011010101'}).then(({result}) => {
-        writeLog(result);
-    });
-
-    wait(2500).then(() => {
-        writeLog('SecondLog');
-
-        return wait(1500);
-    }).then(() => {
-        writeLog('ThirdLog');
-
-        return wait(400);
-    }).then(() => {
-        handleSuccess('Done');
-    });
+    calculateTillTheEnd(value);
 };
 
 export default processSequence;
